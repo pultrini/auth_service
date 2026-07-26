@@ -24,6 +24,7 @@ class User(Base):
     O id é o mesmo UUID gerado pelo Supabase Auth — não geramos aqui.
     Criado no cadastro, sincronizado via FastAPI (nunca pelo pipeline).
     """
+
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(
@@ -68,9 +69,7 @@ class UserAsset(Base):
     """
 
     __tablename__ = "user_assets"
-    __table_args__ = (
-        UniqueConstraint("user_id", "asset_id", name="uq_user_asset"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "asset_id", name="uq_user_asset"),)
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),

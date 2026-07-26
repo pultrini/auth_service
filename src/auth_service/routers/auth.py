@@ -61,9 +61,7 @@ async def login(body: LoginRequest, session: SessionDep) -> TokenResponse:
 
     user_data = resultado["user"]  # noqa: F841
 
-    result = await session.execute(
-        select(User).where(User.email == body.email)
-    )
+    result = await session.execute(select(User).where(User.email == body.email))
     user = result.scalar_one_or_none()
 
     if not user:

@@ -17,13 +17,13 @@ class RegisterRequest(BaseModel):
             raise ValueError("A senha deve ter no mínimo 6 caracteres.")
         return v
 
-
     @field_validator("name")
     @classmethod
     def minimal_name(cls, v: str) -> str:
         if len(v.strip()) < 2:  # noqa: PLR2004
             raise ValueError("Nome deve ter ao menos 2 caracteres.")
         return v.strip()
+
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -48,6 +48,7 @@ class UserResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class UserAssetRequest(BaseModel):
     asset_id: UUID
     quantity: float | None = None
@@ -66,6 +67,7 @@ class UserAssetRequest(BaseModel):
         if v is not None and v < 0:
             raise ValueError("quantity deve ser positivo")
         return v
+
 
 class UserAssetResponse(BaseModel):
     id: UUID

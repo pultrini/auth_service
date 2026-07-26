@@ -33,7 +33,9 @@ async def test_list_assets_returns_empty_for_new_user(client):
             "sqlalchemy.ext.asyncio.AsyncSession.execute",
             new_callable=AsyncMock,
             return_value=MagicMock(
-                mappings=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[])))
+                mappings=MagicMock(
+                    return_value=MagicMock(all=MagicMock(return_value=[]))
+                )
             ),
         ),
     ):

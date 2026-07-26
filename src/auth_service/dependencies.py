@@ -15,6 +15,7 @@ from auth_service.models import User
 
 _bearer = HTTPBearer()
 
+
 def _decode_jwt(token: str) -> dict:
     """
     Valids and decode the emited JWT from supabase auth
@@ -25,7 +26,7 @@ def _decode_jwt(token: str) -> dict:
             token,
             settings.supabase_jwt_secret,
             algorithms=["HS256"],
-            audience="authenticated"
+            audience="authenticated",
         )
         return payload
     except ExpiredSignatureError as e:
@@ -38,6 +39,7 @@ def _decode_jwt(token: str) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="token inválido",
         ) from e
+
 
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer)],
@@ -56,9 +58,7 @@ async def get_current_user(
             detail="Token sem identificador de usuário.",
         )
 
-    result = await session.execute(
-        select(User).where(User.id == UUID(user_id))
-    )
+    result = await session.execute(select(User).where(User.id == UUID(user_id)))
     user = result.scalar_one_or_none()
 
     if not user:

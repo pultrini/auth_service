@@ -16,7 +16,7 @@ _ADMIN_HEADERS = {
     "Authorization": f"Bearer {settings.supabase_service_role_key}",
     "Content-Type": "application/json",
 }
-HTTP_STATUS_OK=200
+HTTP_STATUS_OK = 200
 
 
 class AuthError(Exception):

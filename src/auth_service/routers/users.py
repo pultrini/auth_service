@@ -13,7 +13,9 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/me/assets", response_model=list[UserAssetResponse])
-async def listar_assets(current_user: CurrentUser, session: SessionDep) -> list[UserAssetResponse]:
+async def listar_assets(
+    current_user: CurrentUser, session: SessionDep
+) -> list[UserAssetResponse]:
     """
     Retorna os ativos de interesse do usuário autenticado,
     com ticker e nome vindos de silver.assets via JOIN.
@@ -38,7 +40,9 @@ async def listar_assets(current_user: CurrentUser, session: SessionDep) -> list[
     return [UserAssetResponse(**row) for row in rows]
 
 
-@router.post("/me/assets", response_model=UserAssetResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/me/assets", response_model=UserAssetResponse, status_code=status.HTTP_201_CREATED
+)
 async def adicionar_asset(
     body: UserAssetRequest,
     current_user: CurrentUser,

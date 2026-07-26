@@ -7,8 +7,15 @@ import pytest
 
 from auth_service.services.supabase import AuthError
 
-_FAKE_USER_DB = MagicMock(
-    id=UUID("78d5cd52-9147-4d9d-bb38-08e0651f193d"),
+
+class FakeUser:
+    def __init__(self, id_val, email, name):
+        self.id = id_val
+        self.email = email
+        self.name = name
+
+_FAKE_USER_DB = FakeUser(
+    id_val=UUID("78d5cd52-9147-4d9d-bb38-08e0651f193d"),
     email="davi@teste.com",
     name="Davi",
 )
@@ -33,7 +40,8 @@ async def test_register_success(client):
             new_callable=AsyncMock,
             return_value=_SUPABASE_RESULT,
         ),
-        patch("auth_service.routers.auth.SessionDep", autospec=True),
+        # 2. REMOVIDO: patch("auth_service.routers.auth.SessionDep", autospec=True)
+        # Ao remover, paramos de quebrar o Pydantic.
         patch("sqlalchemy.ext.asyncio.AsyncSession.add"),
         patch(
             "sqlalchemy.ext.asyncio.AsyncSession.commit",

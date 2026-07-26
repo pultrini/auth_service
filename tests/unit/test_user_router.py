@@ -5,8 +5,18 @@ from uuid import UUID
 
 import pytest
 
-_FAKE_USER = MagicMock(
-    id=UUID("78d5cd52-9147-4d9d-bb38-08e0651f193d"),
+from auth_service.app import app
+from auth_service.dependencies import get_current_user
+
+
+class FakeUser:
+    def __init__(self, id_val, email, name):
+        self.id = id_val
+        self.email = email
+        self.name = name
+
+_FAKE_USER_DB = FakeUser(
+    id_val=UUID("78d5cd52-9147-4d9d-bb38-08e0651f193d"),
     email="davi@teste.com",
     name="Davi",
 )
@@ -21,13 +31,20 @@ _FAKE_ASSET_ROW = {
 }
 
 
+@pytest.fixture(autouse=True)
+def override_auth():
+    """Substitui o `get_current_user` pelo _FAKE_USER_DB durante os testes."""
+    app.dependency_overrides[get_current_user] = lambda: _FAKE_USER_DB
+    yield
+    app.dependency_overrides.clear()
+
 @pytest.mark.asyncio
 async def test_list_assets_returns_empty_for_new_user(client):
     """GET /users/me/assets should return empty list for user with no assets."""
     with (
         patch(
             "auth_service.dependencies.get_current_user",
-            return_value=_FAKE_USER,
+            return_value=_FAKE_USER_DB,
         ),
         patch(
             "sqlalchemy.ext.asyncio.AsyncSession.execute",
@@ -66,11 +83,10 @@ async def test_add_asset_success(client):
     )
     mock_existing = MagicMock(scalar_one_or_none=MagicMock(return_value=None))
 
+    async def fake_refresh(obj):
+        obj.id = UUID("11111111-1111-1111-1111-111111111111")
+
     with (
-        patch(
-            "auth_service.dependencies.get_current_user",
-            return_value=_FAKE_USER,
-        ),
         patch(
             "sqlalchemy.ext.asyncio.AsyncSession.execute",
             new_callable=AsyncMock,
@@ -78,7 +94,11 @@ async def test_add_asset_success(client):
         ),
         patch("sqlalchemy.ext.asyncio.AsyncSession.add"),
         patch("sqlalchemy.ext.asyncio.AsyncSession.commit", new_callable=AsyncMock),
-        patch("sqlalchemy.ext.asyncio.AsyncSession.refresh", new_callable=AsyncMock),
+        patch(
+            "sqlalchemy.ext.asyncio.AsyncSession.refresh", 
+            new_callable=AsyncMock, 
+            side_effect=fake_refresh  # <--- Injetamos o UUID aqui
+        ),
     ):
         resp = await client.post(
             "/users/me/assets",
@@ -91,6 +111,9 @@ async def test_add_asset_success(client):
         )
 
     assert resp.status_code == 201
+
+    data = resp.json()
+    assert data["id"] == "11111111-1111-1111-1111-111111111111"
 
 
 @pytest.mark.asyncio
@@ -105,7 +128,7 @@ async def test_add_asset_not_found_returns_404(client):
     with (
         patch(
             "auth_service.dependencies.get_current_user",
-            return_value=_FAKE_USER,
+            return_value=_FAKE_USER_DB,
         ),
         patch(
             "sqlalchemy.ext.asyncio.AsyncSession.execute",
@@ -142,7 +165,7 @@ async def test_remove_asset_not_found_returns_404(client):
     with (
         patch(
             "auth_service.dependencies.get_current_user",
-            return_value=_FAKE_USER,
+            return_value=_FAKE_USER_DB,
         ),
         patch(
             "sqlalchemy.ext.asyncio.AsyncSession.execute",

@@ -3,7 +3,6 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
-from auth_service.database import get_session
 from auth_service.dependencies import CurrentUser, SessionDep
 from auth_service.models import User
 from auth_service.schemas import (
@@ -60,7 +59,7 @@ async def login(body: LoginRequest, session: SessionDep) -> TokenResponse:
     except AuthError as e:
         raise HTTPException(status_code=e.status_code, detail=str(e)) from e
 
-    user_data = resultado["user"]
+    user_data = resultado["user"]  # noqa: F841
 
     result = await session.execute(
         select(User).where(User.email == body.email)

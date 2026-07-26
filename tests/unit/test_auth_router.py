@@ -14,6 +14,7 @@ class FakeUser:
         self.email = email
         self.name = name
 
+
 _FAKE_USER_DB = FakeUser(
     id_val=UUID("78d5cd52-9147-4d9d-bb38-08e0651f193d"),
     email="davi@teste.com",

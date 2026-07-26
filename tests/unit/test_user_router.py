@@ -15,6 +15,7 @@ class FakeUser:
         self.email = email
         self.name = name
 
+
 _FAKE_USER_DB = FakeUser(
     id_val=UUID("78d5cd52-9147-4d9d-bb38-08e0651f193d"),
     email="davi@teste.com",
@@ -37,6 +38,7 @@ def override_auth():
     app.dependency_overrides[get_current_user] = lambda: _FAKE_USER_DB
     yield
     app.dependency_overrides.clear()
+
 
 @pytest.mark.asyncio
 async def test_list_assets_returns_empty_for_new_user(client):
@@ -95,9 +97,9 @@ async def test_add_asset_success(client):
         patch("sqlalchemy.ext.asyncio.AsyncSession.add"),
         patch("sqlalchemy.ext.asyncio.AsyncSession.commit", new_callable=AsyncMock),
         patch(
-            "sqlalchemy.ext.asyncio.AsyncSession.refresh", 
-            new_callable=AsyncMock, 
-            side_effect=fake_refresh  # <--- Injetamos o UUID aqui
+            "sqlalchemy.ext.asyncio.AsyncSession.refresh",
+            new_callable=AsyncMock,
+            side_effect=fake_refresh,
         ),
     ):
         resp = await client.post(
